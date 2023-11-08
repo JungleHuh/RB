@@ -339,3 +339,24 @@ int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   // TODO: implement to_array
   return 0;
 }
+
+int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
+  
+  int i = 0;
+  int *idx;
+  idx = &i;
+  inOrderToArray(t,t->root,arr,n,idx);
+
+  return 0;
+}
+
+void inOrderToArray(const rbtree *tree, node_t *node, key_t*arr, size_t n, int *idx){
+  if(node==tree->nil || *idx>=n) return;
+
+  inOrderToArray(tree,node->left,arr,n,idx);
+  arr[*idx] = node->key;
+  *idx+=1;
+  inOrderToArray(tree,node->right,arr,n,idx);
+  
+  return;
+}

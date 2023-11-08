@@ -241,7 +241,50 @@ void postOrderDelete(rbtree *t, node_t *n)
   rbtree_erase(t, n);
 }
 
-int rbtree_erase(rbtree *t, node_t *p)
+int rbtree_erase(rbtree *t, node_t *p) {
+  node_t *x;
+  node_t *y = p;
+  color_t y_original_color = y ->color;
+
+  if (p->left == t->nil){
+    x = p->right;
+    rb_transplant(t,p,p->left);
+  }else if(p->right == t->nil){
+    x = p->left;
+    rb_transplant(t,p,p->left);
+  }else{
+    y = rbtree_minimum(t, p->right);
+    y_original_color = y ->color;
+    x = y->right;
+    if(y->parent == p){
+      x->parent = y;
+    }else{
+      rb_transplant(t,y,y->right);
+      y->right = p->left;
+      y->left->parent = y;
+      y->color = p->color;
+    }
+    free(p);
+    p=NULL;
+
+    if (y_original_color == RBTREE_BLACK){
+      rb_erase_fixup(t,x);
+    }
+
+  }
+  t->nil->parent = NULL;
+  t->nil->right = NULL;
+  t->nil->left = NULL;
+  t->nil->color = RBTREE_BLACK;
+  
+  return 0;
+}
+
+void rb_erase_fixup(rbtree *tree, node_t *x){
+
+
+
+}
 
 int rbtree_to_array(const rbtree *t, key_t *arr, const size_t n) {
   // TODO: implement to_array

@@ -2,10 +2,24 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "rbtree.h"
-#include "helper.h"
+
+void printPreOrder(rbtree *);
+void preOrder(rbtree *,node_t *);
+void postOrderDelete(rbtree *, node_t *);
+
+void rbtree_fixup(rbtree *, node_t *);
+void right_rotate(rbtree *, node_t *);
+void left_rotate(rbtree *, node_t *);
+
+void rb_transplant(rbtree *, node_t *, node_t *);
+node_t* rbtree_minimum(const rbtree *, node_t *);
+void rb_erase_fixup(rbtree *, node_t *);
+void inOrderToArray(const rbtree *, node_t *, key_t *, size_t, int *);
+
 
 rbtree *new_rbtree(void)
 {
+  //메모리 할당
   rbtree *p = (rbtree *)calloc(1, sizeof(rbtree));
   node_t *nil = (node_t *)calloc(1, sizeof(node_t));
   node_t nilNode = {
@@ -15,6 +29,7 @@ rbtree *new_rbtree(void)
       0,
       0,
   };
+  //포인터 선언
   *nil = nilNode;
 
   p->nil = nil;
@@ -34,7 +49,7 @@ void preOrder(rbtree *tree, node_t *nowNode)
     return;
 
   char *color;
-  if (nowNode->color = RBTREE_RED)
+  if (nowNode->color == RBTREE_RED)
   {
     color = "R";
   }
@@ -300,7 +315,7 @@ int rbtree_erase(rbtree *t, node_t *p)
   if (p->left == t->nil)
   {
     x = p->right;
-    rb_transplant(t, p, p->left);
+    rb_transplant(t, p, p->right);
   }
   else if (p->right == t->nil)
   {
@@ -319,7 +334,11 @@ int rbtree_erase(rbtree *t, node_t *p)
     else
     {
       rb_transplant(t, y, y->right);
-      y->right = p->left;
+      y->right = p->right;
+      y->right->parent = y;
+    }
+      rb_transplant(t,p,y);
+      y->left = p->left; 
       y->left->parent = y;
       y->color = p->color;
     }
@@ -330,7 +349,7 @@ int rbtree_erase(rbtree *t, node_t *p)
     {
       rb_erase_fixup(t, x);
     }
-  }
+  
   t->nil->parent = NULL;
   t->nil->right = NULL;
   t->nil->left = NULL;
@@ -346,12 +365,15 @@ void rb_erase_fixup(rbtree *tree, node_t *x)
 
   while (x != tree->root && x->color == RBTREE_BLACK)
   {
-    if (x == x->parent->left)
-    {
-      w->color = RBTREE_BLACK;
-      x->parent->color = RBTREE_RED;
-      left_rotate(tree, x->parent);
+    if(x == x->parent->left){//왼쪽일 때
       w = x->parent->right;
+      // assert(w!=tree->nil);
+      if(w->color == RBTREE_RED){ //case1
+        w->color = RBTREE_BLACK;
+        x->parent->color = RBTREE_RED;
+        left_rotate(tree,x->parent);
+        w = x->parent->right;
+      }
 
       if (w->left->color == RBTREE_BLACK && w->right->color == RBTREE_BLACK)
       {
